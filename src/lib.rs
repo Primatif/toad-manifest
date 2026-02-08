@@ -126,9 +126,9 @@ pub fn generate_blueprint(projects: &[ProjectDetail]) -> String {
 
     output.push_str("\n## 🌊 Logical Flows\n\n");
     output.push_str("- **Primary Entry:** The root directory acts as the main entry point and orchestrator.\n");
-    output.push_str("- **Dependency Direction:** Components generally depend on lower-level 'Core' or 'Shared' packages.\n");
+    output.push_str("- **Dependency Direction:** Components generally depend on lower-level 'Core' or 'Shared' packages.\n\n");
 
-    output.push_str("\n## 🛠️ Development Governance\n\n");
+    output.push_str("## 🛠️ Development Governance\n\n");
     output.push_str("- **Quality Gates:** Use the provided task runner (e.g., `Justfile`, `Makefile`, `npm scripts`) to verify changes.\n");
     output.push_str("- **Context Preservation:** Always run `toad manifest` after architectural changes to keep AI memory synchronized.\n");
 
