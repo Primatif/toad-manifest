@@ -23,8 +23,6 @@ pub fn generate_markdown(projects: &[ProjectDetail], fingerprint: u64) -> String
             .replace("]", "\\]")
             .replace("http://", "http:\\\\/")
             .replace("https://", "https:\\\\/")
-            .chars()
-            .collect::<String>()
             .split_whitespace()
             .collect::<Vec<&str>>()
             .join(" ");
