@@ -15,6 +15,7 @@ fn test_generate_markdown_basic() {
         taxonomy: vec!["#test".to_string()],
         artifact_dirs: vec!["target".to_string()],
         sub_projects: Vec::new(),
+        submodules: Vec::new(),
     }];
 
     let md = generate_markdown(&projects, 12345);
@@ -46,6 +47,7 @@ fn test_generate_markdown_escaping() {
         taxonomy: vec![],
         artifact_dirs: vec![],
         sub_projects: Vec::new(),
+        submodules: Vec::new(),
     }];
 
     let md = generate_markdown(&projects, 999);
@@ -73,6 +75,7 @@ fn test_generate_markdown_truncation() {
         taxonomy: vec!["#go".to_string()],
         artifact_dirs: vec!["bin".to_string()],
         sub_projects: Vec::new(),
+        submodules: Vec::new(),
     }];
 
     let md = generate_markdown(&projects, 1);

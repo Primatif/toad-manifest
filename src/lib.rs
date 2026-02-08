@@ -69,9 +69,23 @@ pub fn generate_markdown(projects: &[ProjectDetail], fingerprint: u64) -> String
 
             let vcs_display = format!("{}{}", status_indicator, alignment);
 
+            let sub_essence = sub.essence.as_deref().unwrap_or("-");
+            let sub_essence_escaped = sub_essence
+                .replace('|', "\\|")
+                .replace('\n', " ")
+                .chars()
+                .take(100)
+                .collect::<String>();
+
+            let sub_taxonomy = if sub.taxonomy.is_empty() {
+                "-".to_string()
+            } else {
+                format!("`[{}]`", sub.taxonomy.join(", "))
+            };
+
             output.push_str(&format!(
-                "| &nbsp;&nbsp;└─ `{}` | `Submodule` | - | {} | [link]({}) | {} |\n",
-                sub.name, vcs_display, sub.url, "Dependency"
+                "| &nbsp;&nbsp;└─ `{}` | `{}` | - | {} | {} | {} |\n",
+                sub.name, sub.stack, vcs_display, sub_essence_escaped, sub_taxonomy
             ));
         }
     }
