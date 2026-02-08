@@ -108,15 +108,21 @@ pub fn generate_blueprint(projects: &[ProjectDetail]) -> String {
         let deps = extract_internal_deps(&p.path, projects);
         output.push_str(&format!(
             "| **`{}`** | `{}` | Root | {} |\n",
-            p.name, p.stack, deps.join(", ")
+            p.name,
+            p.stack,
+            deps.join(", ")
         ));
 
         // Map Sub-Projects / Submodules
         for sub in &p.submodules {
             let sub_abs_path = p.path.join(&sub.path);
             let sub_deps = extract_internal_deps(&sub_abs_path, projects);
-            let deps_str = if sub_deps.is_empty() { "-" } else { &sub_deps.join(", ") };
-            
+            let deps_str = if sub_deps.is_empty() {
+                "-"
+            } else {
+                &sub_deps.join(", ")
+            };
+
             output.push_str(&format!(
                 "| &nbsp;&nbsp;└─ `{}` | `{}` | Extension | {} |\n",
                 sub.name, sub.stack, deps_str
@@ -125,7 +131,9 @@ pub fn generate_blueprint(projects: &[ProjectDetail]) -> String {
     }
 
     output.push_str("\n## 🌊 Logical Flows\n\n");
-    output.push_str("- **Primary Entry:** The root directory acts as the main entry point and orchestrator.\n");
+    output.push_str(
+        "- **Primary Entry:** The root directory acts as the main entry point and orchestrator.\n",
+    );
     output.push_str("- **Dependency Direction:** Components generally depend on lower-level 'Core' or 'Shared' packages.\n\n");
 
     output.push_str("## 🛠️ Development Governance\n\n");
@@ -160,21 +168,23 @@ pub fn generate_cli_skill(help_text: &str) -> String {
 /// Simple agnostic internal dependency extractor
 fn extract_internal_deps(path: &std::path::Path, all_projects: &[ProjectDetail]) -> Vec<String> {
     let mut internal_deps = Vec::new();
-    
+
     // 1. Check Cargo.toml (Rust)
     let cargo_path = path.join("Cargo.toml");
     if let Ok(content) = std::fs::read_to_string(cargo_path) {
         for p in all_projects {
-            if content.contains(&format!("{} =", p.name)) || content.contains(&format!("path = \"../{}\"", p.name)) {
-                if !internal_deps.contains(&p.name) {
-                    internal_deps.push(format!("`{}`", p.name));
-                }
+            if (content.contains(&format!("{} =", p.name))
+                || content.contains(&format!("path = \"../{}\"", p.name)))
+                && !internal_deps.contains(&p.name)
+            {
+                internal_deps.push(format!("`{}`", p.name));
             }
             for sub in &p.submodules {
-                if content.contains(&format!("{} =", sub.name)) || content.contains(&format!("path = \"../{}\"", sub.name)) {
-                    if !internal_deps.contains(&sub.name) {
-                        internal_deps.push(format!("`{}`", sub.name));
-                    }
+                if (content.contains(&format!("{} =", sub.name))
+                    || content.contains(&format!("path = \"../{}\"", sub.name)))
+                    && !internal_deps.contains(&sub.name)
+                {
+                    internal_deps.push(format!("`{}`", sub.name));
                 }
             }
         }
@@ -184,16 +194,14 @@ fn extract_internal_deps(path: &std::path::Path, all_projects: &[ProjectDetail])
     let pkg_path = path.join("package.json");
     if let Ok(content) = std::fs::read_to_string(pkg_path) {
         for p in all_projects {
-            if content.contains(&format!("\"{}\":", p.name)) {
-                if !internal_deps.contains(&p.name) {
-                    internal_deps.push(format!("`{}`", p.name));
-                }
+            if content.contains(&format!("\"{}\":", p.name)) && !internal_deps.contains(&p.name) {
+                internal_deps.push(format!("`{}`", p.name));
             }
             for sub in &p.submodules {
-                if content.contains(&format!("\"{}\":", sub.name)) {
-                    if !internal_deps.contains(&sub.name) {
-                        internal_deps.push(format!("`{}`", sub.name));
-                    }
+                if content.contains(&format!("\"{}\":", sub.name))
+                    && !internal_deps.contains(&sub.name)
+                {
+                    internal_deps.push(format!("`{}`", sub.name));
                 }
             }
         }
