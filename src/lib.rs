@@ -48,6 +48,32 @@ pub fn generate_markdown(projects: &[ProjectDetail], fingerprint: u64) -> String
             "| **`{}`** | `{}` | {} | {} | {} | {} |\n",
             p.name, p.stack, p.activity, p.vcs_status, essence_safe, taxonomy
         ));
+
+        // Include Submodules
+        for sub in &p.submodules {
+            let status_indicator = if sub.initialized {
+                format!("{}", sub.vcs_status)
+            } else {
+                "⭕ Uninit".to_string()
+            };
+
+            let alignment = if sub.initialized {
+                if sub.expected_commit == sub.actual_commit {
+                    " (aligned)".to_string()
+                } else {
+                    " (drifted)".to_string()
+                }
+            } else {
+                "".to_string()
+            };
+
+            let vcs_display = format!("{}{}", status_indicator, alignment);
+
+            output.push_str(&format!(
+                "| &nbsp;&nbsp;└─ `{}` | `Submodule` | - | {} | [link]({}) | {} |\n",
+                sub.name, vcs_display, sub.url, "Dependency"
+            ));
+        }
     }
 
     output
