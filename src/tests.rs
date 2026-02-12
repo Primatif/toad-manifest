@@ -122,3 +122,78 @@ fn test_token_budget_truncation() {
     assert!(md.contains("[Truncated due to token budget]"));
     assert!(md.len() <= 45 + 40); // 40 chars + truncation message
 }
+
+#[test]
+fn test_generate_project_context_md() {
+    let project = ProjectDetail {
+        name: "test-proj".to_string(),
+        path: PathBuf::from("projects/test-proj"),
+        stack: "Rust".to_string(),
+        activity: ActivityTier::Active,
+        vcs_status: VcsStatus::Clean,
+        essence: Some("Detailed essence here".to_string()),
+        tags: vec!["#test".to_string()],
+        taxonomy: vec!["#test".to_string()],
+        artifact_dirs: vec!["target".to_string()],
+        sub_projects: Vec::new(),
+        submodules: Vec::new(),
+        source: toad_core::TargetSource::PondProject,
+        total_size: 1000,
+        bloat_index: 10.0,
+    };
+
+    let md = super::generate_project_context_md(&project, None);
+    assert!(md.contains("# Project Context: test-proj"));
+    assert!(md.contains("Detailed essence here"));
+    assert!(md.contains("- **Stack:** `Rust`"));
+}
+
+#[test]
+fn test_generate_system_prompt() {
+    let projects = vec![ProjectDetail {
+        name: "test-proj".to_string(),
+        path: PathBuf::from("projects/test-proj"),
+        stack: "Rust".to_string(),
+        activity: ActivityTier::Active,
+        vcs_status: VcsStatus::Clean,
+        essence: Some("essence".to_string()),
+        tags: vec!["#test".to_string()],
+        taxonomy: vec!["#test".to_string()],
+        artifact_dirs: vec!["target".to_string()],
+        sub_projects: Vec::new(),
+        submodules: Vec::new(),
+        source: toad_core::TargetSource::PondProject,
+        total_size: 0,
+        bloat_index: 0.0,
+    }];
+
+    let md = super::generate_system_prompt(&projects, None);
+    assert!(md.contains("# Ecosystem System Prompt"));
+    assert!(md.contains("| `test-proj` | `Rust` |"));
+    assert!(md.contains("`#test`"));
+}
+
+#[test]
+fn test_generate_llms_txt() {
+    let projects = vec![ProjectDetail {
+        name: "test-proj".to_string(),
+        path: PathBuf::from("projects/test-proj"),
+        stack: "Rust".to_string(),
+        activity: ActivityTier::Active,
+        vcs_status: VcsStatus::Clean,
+        essence: Some("essence".to_string()),
+        tags: vec!["#test".to_string()],
+        taxonomy: vec!["#test".to_string()],
+        artifact_dirs: vec!["target".to_string()],
+        sub_projects: Vec::new(),
+        submodules: Vec::new(),
+        source: toad_core::TargetSource::PondProject,
+        total_size: 0,
+        bloat_index: 0.0,
+    }];
+
+    let md = super::generate_llms_txt(&projects);
+    assert!(md.contains("# Toad Ecosystem Context"));
+    assert!(md.contains("- [test-proj CONTEXT](./test-proj/CONTEXT.md)"));
+    assert!(md.contains("- [test-proj AGENTS](./test-proj/AGENTS.md)"));
+}

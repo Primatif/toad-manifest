@@ -319,5 +319,61 @@ pub fn generate_llms_txt(projects: &[ProjectDetail]) -> String {
     output
 }
 
+/// Generates a project-level context deep dive.
+pub fn generate_project_context_md(project: &ProjectDetail, token_limit: Option<usize>) -> String {
+    let mut output = String::new();
+    output.push_str(&format!("# Project Context: {}\n\n", project.name));
+    output.push_str("> **Purpose:** Deep-dive project briefing for AI-native engineering.\n\n");
+
+    output.push_str("## 🏗️ Technical DNA\n\n");
+    output.push_str(&format!("- **Stack:** `{}`\n", project.stack));
+    output.push_str(&format!("- **Activity Tier:** {}\n", project.activity));
+    output.push_str(&format!("- **Taxonomy:** `{}`\n", project.taxonomy.join(", ")));
+    output.push_str(&format!("- **Source Type:** {}\n\n", project.source));
+
+    output.push_str("## 🌊 Semantic Essence\n\n");
+    if let Some(essence) = &project.essence {
+        output.push_str(&format!("{}\n\n", essence));
+    } else {
+        output.push_str("No extracted essence available.\n\n");
+    }
+
+    output.push_str("## 📦 Structure & Artifacts\n\n");
+    if !project.artifact_dirs.is_empty() {
+        output.push_str("- **Artifact Directories:** `");
+        output.push_str(&project.artifact_dirs.join("`, `"));
+        output.push_str("`  \n");
+    }
+    
+    if !project.sub_projects.is_empty() {
+        output.push_str("- **Detected Sub-projects:**  \n");
+        for sub in &project.sub_projects {
+            output.push_str(&format!("  - {}\n", sub));
+        }
+    }
+
+    if !project.submodules.is_empty() {
+        output.push_str("\n### 🔗 Internal Dependencies (Submodules)\n\n");
+        output.push_str("| Submodule | Stack | Status | Essence |\n");
+        output.push_str("| :--- | :--- | :--- | :--- |\n");
+        for sub in &project.submodules {
+            let essence = sub.essence.as_deref().unwrap_or("-");
+            let essence_safe = essence.chars().take(50).collect::<String>();
+            output.push_str(&format!(
+                "| `{}` | `{}` | {} | {} |\n",
+                sub.name, sub.stack, sub.vcs_status, essence_safe
+            ));
+        }
+    }
+
+    output.push('\n');
+
+    if let Some(limit) = token_limit {
+        utils::truncate_by_tokens(&output, limit)
+    } else {
+        output
+    }
+}
+
 #[cfg(test)]
 mod tests;
