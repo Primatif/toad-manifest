@@ -1,7 +1,7 @@
-use toad_core::ProjectDetail;
+use toad_core::{ProjectDetail, utils};
 
 /// Generates a full Markdown manifest string from a list of project details and a fingerprint.
-pub fn generate_markdown(projects: &[ProjectDetail], fingerprint: u64) -> String {
+pub fn generate_markdown(projects: &[ProjectDetail], fingerprint: u64, token_limit: Option<usize>) -> String {
     let mut output = String::new();
     output.push_str("# Project Context Manifest (Shadow)\n\n");
     output.push_str(&format!("> **Fingerprint:** `{}`  \n", fingerprint));
@@ -89,11 +89,16 @@ pub fn generate_markdown(projects: &[ProjectDetail], fingerprint: u64) -> String
     }
 
     output.push('\n');
-    output
+
+    if let Some(limit) = token_limit {
+        utils::truncate_by_tokens(&output, limit)
+    } else {
+        output
+    }
 }
 
 /// Generates an Agnostic Architectural Blueprint.
-pub fn generate_blueprint(projects: &[ProjectDetail]) -> String {
+pub fn generate_blueprint(projects: &[ProjectDetail], token_limit: Option<usize>) -> String {
     let mut output = String::new();
     output.push_str("# Architectural Blueprint (Context)\n\n");
     output.push_str("> **Purpose:** Provides AI agents with a zero-latency vision of the project's dependency graph and logical flow.\n");
@@ -141,7 +146,12 @@ pub fn generate_blueprint(projects: &[ProjectDetail]) -> String {
     output.push_str("- **Context Preservation:** Always run `toad manifest` after architectural changes to keep AI memory synchronized.\n");
 
     output.push('\n');
-    output
+    
+    if let Some(limit) = token_limit {
+        utils::truncate_by_tokens(&output, limit)
+    } else {
+        output
+    }
 }
 
 /// Generates a high-density CLI Reference skill.
@@ -211,6 +221,102 @@ fn extract_internal_deps(path: &std::path::Path, all_projects: &[ProjectDetail])
         internal_deps.push("-".to_string());
     }
     internal_deps
+}
+
+/// Generates an AGENTS.md file for a specific project.
+pub fn generate_agents_md(project: &ProjectDetail) -> String {
+    let mut output = String::new();
+    output.push_str(&format!("# Agent Interface: {}\n\n", project.name));
+    output.push_str("> **Role:** This file provides AI agents with the necessary operational intelligence to work on this component.\n\n");
+
+    output.push_str("## 🛠️ Stack & Capabilities\n\n");
+    output.push_str(&format!("- **Primary Stack:** `{}`\n", project.stack));
+    output.push_str(&format!("- **Activity Tier:** {}\n", project.activity));
+    output.push_str(&format!("- **Ingredients:** `{}`\n\n", project.taxonomy.join(", ")));
+
+    output.push_str("## 🌊 Context Essence\n\n");
+    if let Some(essence) = &project.essence {
+        output.push_str(&format!("{}\n\n", essence));
+    } else {
+        output.push_str("No semantic essence extracted. See README.md for details.\n\n");
+    }
+
+    output.push_str("## 🧪 Operational Patterns\n\n");
+    match project.stack.to_lowercase().as_str() {
+        s if s.contains("rust") => {
+            output.push_str("- **Build:** `cargo build`  \n");
+            output.push_str("- **Test:** `cargo test`  \n");
+            output.push_str("- **Lint:** `cargo clippy`  \n");
+        }
+        s if s.contains("node") || s.contains("javascript") || s.contains("typescript") => {
+            output.push_str("- **Build:** `npm run build`  \n");
+            output.push_str("- **Test:** `npm test`  \n");
+            output.push_str("- **Lint:** `npm run lint`  \n");
+        }
+        s if s.contains("go") => {
+            output.push_str("- **Build:** `go build ./...`  \n");
+            output.push_str("- **Test:** `go test ./...`  \n");
+        }
+        _ => {
+            output.push_str("- **Build/Test:** Refer to project root for build scripts (Justfile, Makefile, etc.).\n");
+        }
+    }
+
+    output.push('\n');
+    output
+}
+
+/// Generates a bird's-eye ecosystem view (SYSTEM_PROMPT.md).
+pub fn generate_system_prompt(projects: &[ProjectDetail], token_limit: Option<usize>) -> String {
+    let mut output = String::new();
+    output.push_str("# Ecosystem System Prompt (Context)\n\n");
+    output.push_str("> **Purpose:** Bird's-eye view of the entire Toad-managed ecosystem for high-level AI orchestration.\n\n");
+
+    output.push_str("## 🪷 Managed Projects\n\n");
+    output.push_str("| Project | Stack | Activity | Tags |\n");
+    output.push_str("| :--- | :--- | :--- | :--- |\n");
+
+    for p in projects {
+        let tags = if p.tags.is_empty() { "-" } else { &p.tags.join(" ") };
+        output.push_str(&format!(
+            "| `{}` | `{}` | {} | {} |\n",
+            p.name, p.stack, p.activity, tags
+        ));
+    }
+
+    output.push_str("\n## 🌊 High-Level Taxonomy\n\n");
+    let mut all_tags: Vec<String> = projects.iter().flat_map(|p| p.tags.clone()).collect();
+    all_tags.sort();
+    all_tags.dedup();
+    output.push_str(&format!("`{}`\n", all_tags.join(", ")));
+
+    output.push('\n');
+
+    if let Some(limit) = token_limit {
+        utils::truncate_by_tokens(&output, limit)
+    } else {
+        output
+    }
+}
+
+/// Generates a standard llms.txt file for the ecosystem.
+pub fn generate_llms_txt(projects: &[ProjectDetail]) -> String {
+    let mut output = String::new();
+    output.push_str("# Toad Ecosystem Context\n\n");
+    output.push_str("> **Generated by:** `toad manifest`  \n\n");
+
+    output.push_str("## Primary Contexts\n\n");
+    output.push_str("- [MANIFEST.md](./MANIFEST.md): Full project table and essence.\n");
+    output.push_str("- [SYSTEM_PROMPT.md](./SYSTEM_PROMPT.md): Bird's-eye view of all projects.\n\n");
+
+    output.push_str("## Project Deep Dives\n\n");
+    for p in projects {
+        output.push_str(&format!("- [{name} CONTEXT](./{name}/CONTEXT.md): Deep dive into {name}.\n", name = p.name));
+        output.push_str(&format!("- [{name} AGENTS](./{name}/AGENTS.md): Operational instructions for {name}.\n", name = p.name));
+    }
+
+    output.push('\n');
+    output
 }
 
 #[cfg(test)]

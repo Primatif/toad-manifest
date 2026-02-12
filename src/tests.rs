@@ -17,9 +17,11 @@ fn test_generate_markdown_basic() {
         sub_projects: Vec::new(),
         submodules: Vec::new(),
         source: toad_core::TargetSource::PondProject,
+        total_size: 0,
+        bloat_index: 0.0,
     }];
 
-    let md = generate_markdown(&projects, 12345);
+    let md = generate_markdown(&projects, 12345, None);
     assert!(md.contains("**Fingerprint:** `12345`"));
     assert!(md.contains(
         "| **`test-proj`** | `Rust` | 🔥 Active | ✅ Clean | Test essence | `[#test]` |"
@@ -28,7 +30,7 @@ fn test_generate_markdown_basic() {
 
 #[test]
 fn test_generate_markdown_empty() {
-    let md = generate_markdown(&[], 0);
+    let md = generate_markdown(&[], 0, None);
     assert!(md.contains("**Fingerprint:** `0`"));
     assert!(md.contains(
         "| Project | Stack | Activity | VCS | Essence (Extractive) | Taxonomy (Ingredients) |"
@@ -50,9 +52,11 @@ fn test_generate_markdown_escaping() {
         sub_projects: Vec::new(),
         submodules: Vec::new(),
         source: toad_core::TargetSource::PondProject,
+        total_size: 0,
+        bloat_index: 0.0,
     }];
 
-    let md = generate_markdown(&projects, 999);
+    let md = generate_markdown(&projects, 999, None);
     // Pipe should be escaped
     assert!(md.contains("Pipe \\|"));
     // Brackets should be escaped
@@ -79,9 +83,11 @@ fn test_generate_markdown_truncation() {
         sub_projects: Vec::new(),
         submodules: Vec::new(),
         source: toad_core::TargetSource::PondProject,
+        total_size: 0,
+        bloat_index: 0.0,
     }];
 
-    let md = generate_markdown(&projects, 1);
+    let md = generate_markdown(&projects, 1, None);
     // Should be truncated at 100 chars (actually 97 + "...")
     assert!(md.contains("..."));
     // Find the essence part in the row
@@ -90,4 +96,29 @@ fn test_generate_markdown_truncation() {
     let essence_part = parts[5].trim();
     assert_eq!(essence_part.len(), 100);
     assert!(essence_part.ends_with("..."));
+}
+
+#[test]
+fn test_token_budget_truncation() {
+    let projects = vec![ProjectDetail {
+        name: "test-proj".to_string(),
+        path: PathBuf::from("projects/test-proj"),
+        stack: "Rust".to_string(),
+        activity: ActivityTier::Active,
+        vcs_status: VcsStatus::Clean,
+        essence: Some("Test essence".to_string()),
+        tags: vec!["#test".to_string()],
+        taxonomy: vec!["#test".to_string()],
+        artifact_dirs: vec!["target".to_string()],
+        sub_projects: Vec::new(),
+        submodules: Vec::new(),
+        source: toad_core::TargetSource::PondProject,
+        total_size: 0,
+        bloat_index: 0.0,
+    }];
+
+    // Set a very small budget (10 tokens = ~40 chars)
+    let md = generate_markdown(&projects, 12345, Some(10));
+    assert!(md.contains("[Truncated due to token budget]"));
+    assert!(md.len() <= 45 + 40); // 40 chars + truncation message
 }
