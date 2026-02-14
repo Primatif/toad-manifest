@@ -1,5 +1,10 @@
 use toad_core::{ProjectDetail, utils};
 
+pub mod synthesis;
+
+pub use synthesis::generate_synthesis;
+pub use utils::truncate_by_tokens;
+
 /// Generates a full Markdown manifest string from a list of project details and a fingerprint.
 pub fn generate_markdown(projects: &[ProjectDetail], fingerprint: u64, token_limit: Option<usize>) -> String {
     let mut output = String::new();
@@ -232,7 +237,17 @@ pub fn generate_agents_md(project: &ProjectDetail) -> String {
     output.push_str("## 🛠️ Stack & Capabilities\n\n");
     output.push_str(&format!("- **Primary Stack:** `{}`\n", project.stack));
     output.push_str(&format!("- **Activity Tier:** {}\n", project.activity));
-    output.push_str(&format!("- **Ingredients:** `{}`\n\n", project.taxonomy.join(", ")));
+    output.push_str(&format!("- **Ingredients:** `{}`\n", project.taxonomy.join(", ")));
+    if !project.dna.roles.is_empty() {
+        output.push_str(&format!("- **DNA Roles:** {}\n", project.dna.roles.join(", ")));
+    }
+    if !project.dna.capabilities.is_empty() {
+        output.push_str(&format!("- **Capabilities:** {}\n", project.dna.capabilities.join(", ")));
+    }
+    if !project.dna.structural_patterns.is_empty() {
+        output.push_str(&format!("- **Patterns:** {}\n", project.dna.structural_patterns.join(", ")));
+    }
+    output.push('\n');
 
     output.push_str("## 🌊 Context Essence\n\n");
     if let Some(essence) = &project.essence {
@@ -313,6 +328,16 @@ pub fn generate_llms_txt(projects: &[ProjectDetail]) -> String {
     for p in projects {
         output.push_str(&format!("- [{name} CONTEXT](./{name}/CONTEXT.md): Deep dive into {name}.\n", name = p.name));
         output.push_str(&format!("- [{name} AGENTS](./{name}/AGENTS.md): Operational instructions for {name}.\n", name = p.name));
+    }
+
+    output.push_str("\n## Project Inventory\n\n");
+    for p in projects {
+        let dna_prefix = if !p.dna.roles.is_empty() {
+            format!("[{}] ", p.dna.roles.join(", "))
+        } else {
+            String::new()
+        };
+        output.push_str(&format!("- **{}**: {}{}\n", p.name, dna_prefix, p.essence.as_deref().unwrap_or("No essence.")));
     }
 
     output.push('\n');

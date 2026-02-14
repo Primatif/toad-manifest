@@ -19,6 +19,7 @@ fn test_generate_markdown_basic() {
         source: toad_core::TargetSource::PondProject,
         total_size: 0,
         bloat_index: 0.0,
+        dna: toad_core::ProjectDna::default(),
     }];
 
     let md = generate_markdown(&projects, 12345, None);
@@ -54,6 +55,7 @@ fn test_generate_markdown_escaping() {
         source: toad_core::TargetSource::PondProject,
         total_size: 0,
         bloat_index: 0.0,
+        dna: toad_core::ProjectDna::default(),
     }];
 
     let md = generate_markdown(&projects, 999, None);
@@ -85,6 +87,7 @@ fn test_generate_markdown_truncation() {
         source: toad_core::TargetSource::PondProject,
         total_size: 0,
         bloat_index: 0.0,
+        dna: toad_core::ProjectDna::default(),
     }];
 
     let md = generate_markdown(&projects, 1, None);
@@ -115,6 +118,7 @@ fn test_token_budget_truncation() {
         source: toad_core::TargetSource::PondProject,
         total_size: 0,
         bloat_index: 0.0,
+        dna: toad_core::ProjectDna::default(),
     }];
 
     // Set a very small budget (10 tokens = ~40 chars)
@@ -140,6 +144,7 @@ fn test_generate_project_context_md() {
         source: toad_core::TargetSource::PondProject,
         total_size: 1000,
         bloat_index: 10.0,
+        dna: toad_core::ProjectDna::default(),
     };
 
     let md = super::generate_project_context_md(&project, None);
@@ -165,6 +170,7 @@ fn test_generate_system_prompt() {
         source: toad_core::TargetSource::PondProject,
         total_size: 0,
         bloat_index: 0.0,
+        dna: toad_core::ProjectDna::default(),
     }];
 
     let md = super::generate_system_prompt(&projects, None);
@@ -190,6 +196,7 @@ fn test_generate_llms_txt() {
         source: toad_core::TargetSource::PondProject,
         total_size: 0,
         bloat_index: 0.0,
+        dna: toad_core::ProjectDna::default(),
     }];
 
     let md = super::generate_llms_txt(&projects);
