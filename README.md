@@ -12,12 +12,12 @@ a context oracle.
 - **Markdown Manifest** — `generate_markdown()` produces the high-density
   `MANIFEST.md` table with project stack, activity, VCS status, essence, and
   taxonomy. Token-budget aware.
-- **System Prompt** — `generate_system_prompt()` creates `SYSTEM_PROMPT.md`,
-  the ecosystem-level briefing designed to be injected into an AI agent's
-  system prompt.
+- **System Prompt** — `generate_system_prompt()` creates `SYSTEM_PROMPT.md`, the
+  ecosystem-level briefing designed to be injected into an AI agent's system
+  prompt.
 - **llms.txt** — `generate_llms_txt()` produces the ecosystem sitemap adapted
-  from the llmstxt.org web standard for local use. This is the file an AI
-  agent reads first.
+  from the llmstxt.org web standard for local use. This is the file an AI agent
+  reads first.
 - **AGENTS.md** — `generate_agents_md()` creates per-project operational
   instructions in the AGENTS.md format supported by 20+ AI tools.
 - **CONTEXT.md** — `generate_project_context_md()` produces deep-dive project

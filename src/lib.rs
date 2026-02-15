@@ -6,7 +6,11 @@ pub use synthesis::generate_synthesis;
 pub use utils::truncate_by_tokens;
 
 /// Generates a full Markdown manifest string from a list of project details and a fingerprint.
-pub fn generate_markdown(projects: &[ProjectDetail], fingerprint: u64, token_limit: Option<usize>) -> String {
+pub fn generate_markdown(
+    projects: &[ProjectDetail],
+    fingerprint: u64,
+    token_limit: Option<usize>,
+) -> String {
     let mut output = String::new();
     output.push_str("# Project Context Manifest (Shadow)\n\n");
     output.push_str(&format!("> **Fingerprint:** `{}`  \n", fingerprint));
@@ -151,7 +155,7 @@ pub fn generate_blueprint(projects: &[ProjectDetail], token_limit: Option<usize>
     output.push_str("- **Context Preservation:** Always run `toad manifest` after architectural changes to keep AI memory synchronized.\n");
 
     output.push('\n');
-    
+
     if let Some(limit) = token_limit {
         utils::truncate_by_tokens(&output, limit)
     } else {
@@ -237,15 +241,27 @@ pub fn generate_agents_md(project: &ProjectDetail) -> String {
     output.push_str("## 🛠️ Stack & Capabilities\n\n");
     output.push_str(&format!("- **Primary Stack:** `{}`\n", project.stack));
     output.push_str(&format!("- **Activity Tier:** {}\n", project.activity));
-    output.push_str(&format!("- **Ingredients:** `{}`\n", project.taxonomy.join(", ")));
+    output.push_str(&format!(
+        "- **Ingredients:** `{}`\n",
+        project.taxonomy.join(", ")
+    ));
     if !project.dna.roles.is_empty() {
-        output.push_str(&format!("- **DNA Roles:** {}\n", project.dna.roles.join(", ")));
+        output.push_str(&format!(
+            "- **DNA Roles:** {}\n",
+            project.dna.roles.join(", ")
+        ));
     }
     if !project.dna.capabilities.is_empty() {
-        output.push_str(&format!("- **Capabilities:** {}\n", project.dna.capabilities.join(", ")));
+        output.push_str(&format!(
+            "- **Capabilities:** {}\n",
+            project.dna.capabilities.join(", ")
+        ));
     }
     if !project.dna.structural_patterns.is_empty() {
-        output.push_str(&format!("- **Patterns:** {}\n", project.dna.structural_patterns.join(", ")));
+        output.push_str(&format!(
+            "- **Patterns:** {}\n",
+            project.dna.structural_patterns.join(", ")
+        ));
     }
     output.push('\n');
 
@@ -292,7 +308,11 @@ pub fn generate_system_prompt(projects: &[ProjectDetail], token_limit: Option<us
     output.push_str("| :--- | :--- | :--- | :--- |\n");
 
     for p in projects {
-        let tags = if p.tags.is_empty() { "-" } else { &p.tags.join(" ") };
+        let tags = if p.tags.is_empty() {
+            "-"
+        } else {
+            &p.tags.join(" ")
+        };
         output.push_str(&format!(
             "| `{}` | `{}` | {} | {} |\n",
             p.name, p.stack, p.activity, tags
@@ -322,12 +342,19 @@ pub fn generate_llms_txt(projects: &[ProjectDetail]) -> String {
 
     output.push_str("## Primary Contexts\n\n");
     output.push_str("- [MANIFEST.md](./MANIFEST.md): Full project table and essence.\n");
-    output.push_str("- [SYSTEM_PROMPT.md](./SYSTEM_PROMPT.md): Bird's-eye view of all projects.\n\n");
+    output
+        .push_str("- [SYSTEM_PROMPT.md](./SYSTEM_PROMPT.md): Bird's-eye view of all projects.\n\n");
 
     output.push_str("## Project Deep Dives\n\n");
     for p in projects {
-        output.push_str(&format!("- [{name} CONTEXT](./{name}/CONTEXT.md): Deep dive into {name}.\n", name = p.name));
-        output.push_str(&format!("- [{name} AGENTS](./{name}/AGENTS.md): Operational instructions for {name}.\n", name = p.name));
+        output.push_str(&format!(
+            "- [{name} CONTEXT](./{name}/CONTEXT.md): Deep dive into {name}.\n",
+            name = p.name
+        ));
+        output.push_str(&format!(
+            "- [{name} AGENTS](./{name}/AGENTS.md): Operational instructions for {name}.\n",
+            name = p.name
+        ));
     }
 
     output.push_str("\n## Project Inventory\n\n");
@@ -337,7 +364,12 @@ pub fn generate_llms_txt(projects: &[ProjectDetail]) -> String {
         } else {
             String::new()
         };
-        output.push_str(&format!("- **{}**: {}{}\n", p.name, dna_prefix, p.essence.as_deref().unwrap_or("No essence.")));
+        output.push_str(&format!(
+            "- **{}**: {}{}\n",
+            p.name,
+            dna_prefix,
+            p.essence.as_deref().unwrap_or("No essence.")
+        ));
     }
 
     output.push('\n');
@@ -354,10 +386,16 @@ pub fn generate_project_context_md(project: &ProjectDetail, token_limit: Option<
     output.push_str("## 🏗️ Technical DNA\n\n");
     output.push_str(&format!("- **Stack:** `{}`\n", project.stack));
     output.push_str(&format!("- **Activity Tier:** {}\n", project.activity));
-    output.push_str(&format!("- **Taxonomy:** `{}`\n", project.taxonomy.join(", ")));
+    output.push_str(&format!(
+        "- **Taxonomy:** `{}`\n",
+        project.taxonomy.join(", ")
+    ));
     output.push_str(&format!("- **Source Type:** {}\n", project.source));
     if !project.dna.roles.is_empty() {
-        output.push_str(&format!("- **Primary Roles:** `{}`\n", project.dna.roles.join("`, `")));
+        output.push_str(&format!(
+            "- **Primary Roles:** `{}`\n",
+            project.dna.roles.join("`, `")
+        ));
     }
     output.push('\n');
 
@@ -365,7 +403,9 @@ pub fn generate_project_context_md(project: &ProjectDetail, token_limit: Option<
     if let Some(essence) = &project.essence {
         output.push_str(&format!("{}\n\n", essence));
     } else {
-        output.push_str("No extracted essence available. Refer to README.md for primary documentation.\n\n");
+        output.push_str(
+            "No extracted essence available. Refer to README.md for primary documentation.\n\n",
+        );
     }
 
     output.push_str("## 🚦 Entry Points & Commands\n\n");
@@ -383,7 +423,8 @@ pub fn generate_project_context_md(project: &ProjectDetail, token_limit: Option<
             output.push_str("- **Primary Commands:** `go build`, `go test`, `go run .`  \n");
         }
         _ => {
-            output.push_str("- **Entry Points:** Refer to root directory for source structure.  \n");
+            output
+                .push_str("- **Entry Points:** Refer to root directory for source structure.  \n");
             output.push_str("- **Primary Commands:** Look for `Justfile`, `Makefile`, or `README.md` instructions.  \n");
         }
     }
@@ -395,7 +436,7 @@ pub fn generate_project_context_md(project: &ProjectDetail, token_limit: Option<
         output.push_str(&project.artifact_dirs.join("`, `"));
         output.push_str("`  \n");
     }
-    
+
     if !project.sub_projects.is_empty() {
         output.push_str("- **Detected Sub-projects:**  \n");
         for sub in &project.sub_projects {
@@ -422,9 +463,13 @@ pub fn generate_project_context_md(project: &ProjectDetail, token_limit: Option<
     }
 
     output.push_str("\n## 🛠️ Development Lifecycle\n\n");
-    output.push_str("1. **Understand:** Read `AGENTS.md` and `README.md` for specific component context.  \n");
+    output.push_str(
+        "1. **Understand:** Read `AGENTS.md` and `README.md` for specific component context.  \n",
+    );
     output.push_str("2. **Implement:** Adhere to existing patterns in the source directory.  \n");
-    output.push_str("3. **Verify:** Run the primary test command identified in the Entry Points section.  \n");
+    output.push_str(
+        "3. **Verify:** Run the primary test command identified in the Entry Points section.  \n",
+    );
     output.push_str("4. **Synchronize:** Run `toad manifest` after architectural changes to refresh the ecosystem context.  \n");
 
     output.push('\n');
