@@ -5,4 +5,4 @@ edition = "2024"
 license = "BUSL-1.1"
 
 [dependencies]
-toad-core = { version = "1.1.0", path = "../toad-core" }
+toad-core = { version = "1.1.2", path = "../toad-core" }
